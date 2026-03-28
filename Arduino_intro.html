@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arduino 基础：连接数字世界与生物医疗</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Source Sans Pro', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, helvetica, arial, sans-serif;
+            overflow: hidden;
+            background-color: #0f172a;
+        }
+
+        .slide {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .code-block {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1.5rem;
+            color: #e2e8f0;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .safety-warning {
+            border-left: 6px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #475569;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: #3b82f6;
+            transform: scale(1.3);
+        }
+
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 20px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.3);
+            transition: color 0.3s;
+            z-index: 50;
+        }
+
+        .nav-btn:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Heartbeat Animation */
+        .heart-trace {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 3s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-100">
+
+    <!-- Navigation Arrows -->
+    <div id="prevBtn" class="nav-btn left-4" onclick="changeSlide(-1)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </div>
+    <div id="nextBtn" class="nav-btn right-4" onclick="changeSlide(1)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+
+    <!-- Slides Container -->
+    <div id="presentation">
+        
+        <!-- Slide 1: Title -->
+        <section class="slide active bg-gradient-to-br from-blue-900 via-slate-900 to-black p-12 text-center">
+            <!-- ECG Background Animation -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+                <svg width="100%" height="100%" viewBox="0 0 800 200">
+                    <path class="heart-trace" d="M0,100 L100,100 L120,80 L140,120 L160,100 L200,100 L220,20 L240,180 L260,100 L350,100 L370,80 L390,120 L410,100 L800,100" stroke="#3b82f6" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+            <h1 class="text-6xl font-bold mb-6 text-blue-400 z-10">Arduino 基础：连接数字世界与生物医疗</h1>
+            <div class="w-24 h-1 bg-blue-500 mx-auto mb-8 z-10"></div>
+            <p class="text-2xl text-slate-400 z-10">985大学生物医学工程新生项目课</p>
+            <p class="text-lg mt-12 text-slate-500 z-10">使用键盘方向键或点击两侧翻页</p>
+        </section>
+
+        <!-- Slide 2: What is Arduino with Image -->
+        <section class="slide p-12 bg-slate-900">
+            <div class="max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-10 text-blue-300">第一部分：什么是 Arduino？</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                            <h3 class="text-xl font-semibold mb-2 text-white">开源硬件先驱</h3>
+                            <p class="text-slate-400 text-sm">基于易用软硬件的电子原型平台，让想法快速落地。</p>
+                        </div>
+                        <div class="bg-blue-900/20 p-6 rounded-xl border border-blue-500/30">
+                            <h3 class="text-xl font-semibold mb-2 text-blue-300">BME 的理想工具</h3>
+                            <p class="text-slate-400 text-sm">海量生物传感器库（心率、脑电等）支持，跨平台兼容性强。</p>
+                        </div>
+                    </div>
+                    <!-- Arduino SVG Illustration -->
+                    <div class="lg:col-span-2 flex justify-center">
+                        <div class="relative bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl">
+                            <p class="text-center text-xs text-slate-500 mb-4 font-mono">[ Arduino Uno 硬件示意图 ]</p>
+                            <svg width="400" height="280" viewBox="0 0 400 280">
+                                <rect x="10" y="10" width="380" height="260" rx="15" fill="#00979C" />
+                                <rect x="30" y="30" width="60" height="40" fill="#E5E7EB" /> <!-- USB Port -->
+                                <rect x="320" y="60" width="60" height="160" fill="#1F2937" /> <!-- Headers -->
+                                <rect x="20" y="60" width="10" height="160" fill="#1F2937" /> <!-- Headers Left -->
+                                <rect x="150" y="120" width="100" height="100" rx="5" fill="#374151" /> <!-- ATmega328P -->
+                                <text x="200" y="175" fill="white" font-size="12" text-anchor="middle" font-family="monospace">ATmega328P</text>
+                                <text x="200" y="245" fill="white" font-size="18" font-weight="bold" text-anchor="middle">ARDUINO UNO</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: AD8232 & Signal Flow -->
+        <section class="slide p-12 bg-slate-900">
+            <div class="max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-10 text-blue-300">第二部分：AD8232 与信号流向</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-slate-800 p-8 rounded-xl border border-slate-700">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                                <svg class="text-red-500" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            </div>
+                            <h3 class="text-2xl font-bold">AD8232 心电前端</h3>
+                        </div>
+                        <ul class="space-y-4 text-slate-300">
+                            <li>• <span class="text-blue-400 font-bold">仪表放大器</span>：提取微弱的心电信号</li>
+                            <li>• <span class="text-blue-400 font-bold">滤波电路</span>：去除肌肉噪声与基线漂移</li>
+                            <li>• <span class="text-blue-400 font-bold">导联脱落检测</span>：实时监控传感器状态</li>
+                        </ul>
+                        <div class="mt-8 p-4 bg-blue-900/30 rounded-lg">
+                            <p class="text-xs font-mono text-blue-300">信号路径：人体 (电极) ➔ AD8232 ➔ Arduino (A0) ➔ 电脑</p>
+                        </div>
+                    </div>
+                    <!-- ECG Waveform Animation -->
+                    <div class="bg-black p-6 rounded-xl border-4 border-slate-700 shadow-inner">
+                        <p class="text-center text-xs text-green-500 mb-2 font-mono">REAL-TIME ECG SIMULATION</p>
+                        <svg width="100%" height="200" viewBox="0 0 400 200" class="bg-slate-950">
+                            <path d="M0,100 L50,100 L60,80 L70,120 L80,100 L120,100 L135,20 L150,180 L165,100 L250,100 L260,80 L270,120 L280,100 L400,100" 
+                                  fill="none" stroke="#22c55e" stroke-width="3" class="heart-trace" />
+                            <line x1="0" y1="0" x2="400" y2="0" stroke="#1e293b" stroke-dasharray="5,5" />
+                            <line x1="0" y1="50" x2="400" y2="50" stroke="#1e293b" stroke-dasharray="5,5" />
+                            <line x1="0" y1="100" x2="400" y2="100" stroke="#1e293b" stroke-dasharray="5,5" />
+                            <line x1="0" y1="150" x2="400" y2="150" stroke="#1e293b" stroke-dasharray="5,5" />
+                        </svg>
+                        <p class="text-right text-[10px] text-slate-500 mt-2">Scale: 100ms/div | 0.5mV/div</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Programming -->
+        <section class="slide p-12 bg-slate-950">
+            <div class="max-w-4xl w-full">
+                <h2 class="text-4xl font-bold mb-6 text-blue-300">第三部分：编程基础</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-slate-200">架构：Setup & Loop</h3>
+                        <p class="text-slate-400 mb-6 text-lg">
+                            Arduino 程序就像一个不断跳动的心脏，先初始化，然后永远循环。
+                        </p>
+                        <div class="bg-slate-800 p-4 rounded-lg text-sm italic text-slate-400">
+                            "setup() 运行一次，loop() 运行一生。"
+                        </div>
+                    </div>
+                    <div class="code-block text-sm">
+<pre>
+<span class="text-blue-400">void</span> setup() {
+  <span class="text-green-400">// 初始化串口，波特率设为 115200</span>
+  Serial.begin(115200); 
+}
+
+<span class="text-blue-400">void</span> loop() {
+  <span class="text-green-400">// 读取 AD8232 输出的模拟信号</span>
+  <span class="text-blue-400">int</span> val = analogRead(A0); 
+  <span class="text-green-400">// 实时上传至电脑分析</span>
+  Serial.println(val);      
+  delay(4); <span class="text-slate-500">// 采样频率约 250Hz</span>
+}
+</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Role in BME (ADC Visualized) -->
+        <section class="slide p-12 bg-slate-900">
+            <div class="max-w-5xl w-full">
+                <h2 class="text-4xl font-bold mb-8 text-blue-300">第四部分：BME 核心角色 - ADC 量化</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                    <div class="space-y-6">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                            <h3 class="text-xl font-bold text-white mb-2">10-bit 精度意味着什么？</h3>
+                            <p class="text-slate-400 mb-4">Arduino 将 0V-5V 划分为 1024 个台阶：</p>
+                            <div class="bg-black/50 p-4 rounded font-mono text-center">
+                                <span class="text-blue-400 text-3xl font-bold">4.88 mV</span>
+                                <p class="text-xs text-slate-500 mt-1">每个数字单位代表的电压</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-orange-900/20 border-l-4 border-orange-500 rounded">
+                            <h4 class="font-bold text-orange-300">采样频率的重要性</h4>
+                            <p class="text-sm text-slate-300">为了还原心电波形细节，采样率必须达到信号带宽的2倍以上（Nyquist 定理）。</p>
+                        </div>
+                    </div>
+                    <!-- Quantization Illustration -->
+                    <div class="relative bg-slate-800 p-6 rounded-xl border border-slate-700 h-[300px] flex items-end justify-around">
+                        <p class="absolute top-4 left-6 text-xs text-slate-500 font-mono">ADC 量化示意图 (模拟 -> 数字)</p>
+                        <!-- Bars representing digital steps -->
+                        <div class="w-8 bg-blue-500 opacity-40" style="height: 20%;"></div>
+                        <div class="w-8 bg-blue-500 opacity-60" style="height: 45%;"></div>
+                        <div class="w-8 bg-blue-500 opacity-80" style="height: 90%;"></div>
+                        <div class="w-8 bg-blue-500 opacity-100" style="height: 70%;"></div>
+                        <div class="w-8 bg-blue-500 opacity-70" style="height: 30%;"></div>
+                        <div class="w-8 bg-blue-500 opacity-50" style="height: 15%;"></div>
+                        <!-- Continuous line -->
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 300">
+                            <path d="M50,250 Q100,50 150,200 T250,100 T350,250" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Safety (CRITICAL) -->
+        <section class="slide p-12 bg-red-950/20">
+            <div class="max-w-4xl w-full">
+                <div class="flex items-center gap-4 mb-8">
+                    <svg class="text-red-500" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <h2 class="text-5xl font-bold text-red-500">医疗实验安全 (最高优先级)</h2>
+                </div>
+                
+                <div class="safety-warning rounded-r-lg mb-10">
+                    <p class="text-2xl font-bold text-red-100">严禁连接插座充电器！</p>
+                    <p class="text-lg text-red-200/80 mt-2">在进行人体连接实验时，必须遵循以下准则：</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-800/80 p-6 rounded-xl border border-green-500/30">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                            <h4 class="text-xl font-bold text-green-400">✅ 最佳安全实践</h4>
+                        </div>
+                        <p class="text-slate-300">笔记本断开充电线，仅使用<b>自带电池</b>供电。确保受试者与市电物理隔离。</p>
+                    </div>
+                    <div class="bg-slate-800/80 p-6 rounded-xl border border-red-500/30">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <h4 class="text-xl font-bold text-red-400">❌ 潜在危险</h4>
+                        </div>
+                        <p class="text-slate-300">市电通过开关电源漏电，可能造成微电流电击，直接穿透心脏。<b>医疗器械安全标准是 BME 的底线。</b></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Conclusion -->
+        <section class="slide p-12 bg-gradient-to-t from-blue-900/30 to-slate-950 text-center">
+            <h2 class="text-5xl font-bold mb-10 text-white italic">"Don't just code, solve real problems."</h2>
+            <div class="max-w-2xl mx-auto space-y-6">
+                <p class="text-2xl text-blue-300 font-semibold">从采集心电开始，开启你的 BME 之路</p>
+                <div class="h-px bg-slate-700 w-full"></div>
+                <div class="flex justify-center gap-12 mt-8">
+                    <div class="text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+                        </div>
+                        <p class="text-sm text-slate-500">今日</p>
+                        <p class="text-lg">心电分类器</p>
+                    </div>
+                    <div class="text-center text-blue-400 self-center">
+                        <p class="text-4xl animate-bounce">→</p>
+                    </div>
+                    <div class="text-center group">
+                        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-600 transition-colors">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        </div>
+                        <p class="text-sm text-slate-500">未来</p>
+                        <p class="text-lg">智能假肢 / 手术机器人</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Progress Indicator -->
+    <div id="progress" class="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-50"></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressContainer = document.getElementById('progress');
+
+        // Init Progress Dots
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = `progress-dot cursor-pointer ${index === 0 ? 'active' : ''}`;
+            dot.onclick = () => goToSlide(index);
+            progressContainer.appendChild(dot);
+        });
+
+        function updateProgress() {
+            document.querySelectorAll('.progress-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function changeSlide(direction) {
+            const next = currentSlide + direction;
+            if (next >= 0 && next < slides.length) {
+                goToSlide(next);
+            }
+        }
+
+        function goToSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            updateProgress();
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+        });
+
+        // Touch support
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) changeSlide(1);
+            if (touchEndX - touchStartX > 50) changeSlide(-1);
+        });
+    </script>
+</body>
+</html>
